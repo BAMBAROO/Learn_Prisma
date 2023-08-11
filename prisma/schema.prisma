@@ -13,34 +13,42 @@ datasource db {
 
 model User {
   id String @id @default(uuid())
+  age Int
   name String
   email String
   isAdmin Boolean
-  writtenPosts Post[] @relation("WrittenBy")
-  favoritePosts Post[] @relation("FavoriteBy")
-  userPreference UserPreference?
+  writtenPosts Post[] @relation("WrittenBy") // many to one
+  favoritePosts Post[] @relation("FavoriteBy") // many to one
+  userPreference UserPreference? // one to one
+
+  @@unique([name,age]) // can't have name and age same twice
+  @@index([email]) // creating index by email
 }
 
 model UserPreference {
   id String @id @default(uuid())
   emailUpdate Boolean
-  preference User @relation(fields: [userId], references: [id])
-  userId String @unique
+  preference User @relation(fields: [userId], references: [id]) // one to one
+  userId String @unique // unique because the relationship is one to one
 }
 
 model Post {
   id String @id @default(uuid())
+  title String
   rating Float
-  createdAt DateTime
-  updatedAt DateTime
-  author User @relation("WrittenBy",fields: [authorId], references: [id])
+  createdAt DateTime @default(now())
+  updatedAt DateTime  @updatedAt
+  author User @relation("WrittenBy",fields: [authorId], references: [id]) // one to many
   authorId String
-  favoriteBy User? @relation("FavoriteBy",fields: [favoriteById], references: [id])
+  favoriteBy User? @relation("FavoriteBy",fields: [favoriteById], references: [id]) // one to many
   favoriteById String?
-  categories Categories[]
+  categories Categories[] // many to many
+
+  // @@id([title, authorId]) // make title and authorId as a primary key at the same time
 }
 
 model Categories {
   id String @id @default(uuid())
-  post Post[]
+  name String @unique
+  post Post[] // many to many
 }
